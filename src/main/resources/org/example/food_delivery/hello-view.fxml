@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="appRoot" xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.food_delivery.MainController" styleClass="app-root" stylesheets="@app.css">
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="brand-panel">
+                <Label text="🍔  FoodFlow" styleClass="brand-title" />
+                <Label text="Delivery Console" styleClass="brand-subtitle" />
+            </VBox>
+            <VBox styleClass="nav-group">
+                <Button fx:id="clientsNavButton" text="👥   Clients" onAction="#onOpenClients" styleClass="nav-button" maxWidth="Infinity" />
+                <Button fx:id="couriersNavButton" text="🛵   Couriers" onAction="#onOpenCouriers" styleClass="nav-button" maxWidth="Infinity" />
+                <Button fx:id="ordersNavButton" text="📦   Orders" onAction="#onOpenOrders" styleClass="nav-button" maxWidth="Infinity" />
+            </VBox>
+            <Region VBox.vgrow="ALWAYS" />
+            <VBox styleClass="nav-footer">
+                <Button fx:id="dashboardNavButton" text="📊   Dashboard" onAction="#onOpenDashboard" styleClass="nav-button" maxWidth="Infinity" />
+            </VBox>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox styleClass="content-shell">
+            <HBox alignment="CENTER_LEFT" styleClass="window-strip">
+                <Label text="Food Delivery Management" styleClass="window-title" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="themeToggleButton" text="🌙  Dark" onAction="#onToggleTheme" styleClass="theme-toggle" />
+            </HBox>
+            <StackPane fx:id="contentStack" styleClass="content-area" VBox.vgrow="ALWAYS">
+                <VBox fx:id="dashboardView" styleClass="content-view">
+                    <fx:include source="dashboard-tab.fxml" fx:id="dashboardTabContent" />
+                </VBox>
+                <VBox fx:id="clientsView" styleClass="content-view">
+                    <fx:include source="clients-tab.fxml" fx:id="clientsTabContent" />
+                </VBox>
+                <VBox fx:id="couriersView" styleClass="content-view">
+                    <fx:include source="couriers-tab.fxml" fx:id="couriersTabContent" />
+                </VBox>
+                <VBox fx:id="ordersView" styleClass="content-view">
+                    <fx:include source="orders-tab.fxml" fx:id="ordersTabContent" />
+                </VBox>
+            </StackPane>
+        </VBox>
+    </center>
+</BorderPane>

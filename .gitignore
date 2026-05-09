@@ -1,0 +1,43 @@
+# Build output
+target/
+build/
+out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse / VS Code
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Maven wrapper logs
+.mvn/wrapper/maven-wrapper.jar
+
+# Local screenshots & generated artifacts (keep source CSS/Java/FXML)
+screenshot_*.png
+food_delivery_uml.png
+template_extract.md
+template_unpacked/
+template_text.txt
+
+# Generated docx reports
+Отчёт_по_практике_FoodDelivery*.docx
+
+# Logs
+*.log
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Database credentials / local config
+application-local.properties
+.env

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.food_delivery.controllers.OrdersController" spacing="18.0" styleClass="orders-page">
+    <HBox alignment="CENTER_LEFT" spacing="18.0">
+        <VBox spacing="4.0">
+            <Label text="Orders" styleClass="page-title" />
+            <Label text="Manage all delivery orders" styleClass="page-subtitle" />
+        </VBox>
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="headerSearchField" promptText="🔍   Search orders..." styleClass="header-search-field" />
+        <Button text="↩  Back to Main Menu" onAction="#onBackToMainMenu" styleClass="ghost-button" />
+        <Button text="+  Add Order" onAction="#onOrderAdd" styleClass="primary-cta-button" />
+    </HBox>
+
+    <FlowPane hgap="16.0" vgap="16.0" prefWrapLength="980.0" styleClass="stats-grid">
+        <VBox styleClass="metric-card metric-card-total">
+            <Region styleClass="metric-accent-bar" />
+            <Label text="TOTAL ORDERS" styleClass="metric-title" />
+            <Label fx:id="totalOrdersLabel" text="0" styleClass="metric-value" />
+            <Label text="All time" styleClass="metric-caption" />
+        </VBox>
+        <VBox styleClass="metric-card metric-card-delivery">
+            <Region styleClass="metric-accent-bar" />
+            <Label text="IN DELIVERY" styleClass="metric-title" />
+            <Label fx:id="inDeliveryLabel" text="0" styleClass="metric-value" />
+            <Label text="Active orders" styleClass="metric-caption" />
+        </VBox>
+        <VBox styleClass="metric-card metric-card-done">
+            <Region styleClass="metric-accent-bar" />
+            <Label text="DELIVERED" styleClass="metric-title" />
+            <Label fx:id="deliveredLabel" text="0" styleClass="metric-value" />
+            <Label text="Completed" styleClass="metric-caption" />
+        </VBox>
+        <VBox styleClass="metric-card metric-card-cancelled">
+            <Region styleClass="metric-accent-bar" />
+            <Label text="CANCELLED" styleClass="metric-title" />
+            <Label fx:id="cancelledLabel" text="0" styleClass="metric-value" />
+            <Label text="Cancelled orders" styleClass="metric-caption" />
+        </VBox>
+    </FlowPane>
+
+    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="table-filter-row">
+        <TextField fx:id="tableSearchField" promptText="🔍   Search by order number, client, restaurant..." styleClass="toolbar-search-field" HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="statusFilterBox" promptText="All Statuses" styleClass="toolbar-filter-box" />
+        <DatePicker fx:id="fromDatePicker" promptText="From" styleClass="toolbar-date-box" />
+        <DatePicker fx:id="toDatePicker" promptText="To" styleClass="toolbar-date-box" />
+        <Button text="Reset" onAction="#onOrderRefresh" styleClass="ghost-button" />
+    </HBox>
+
+    <BorderPane styleClass="orders-table-shell" VBox.vgrow="ALWAYS">
+        <center>
+            <TableView fx:id="orderTable" prefHeight="420.0" styleClass="orders-table">
+                <columns>
+                    <TableColumn fx:id="orderIdColumn" text="№" prefWidth="55.0" />
+                    <TableColumn fx:id="orderNumberColumn" text="ORDER NO" prefWidth="130.0" />
+                    <TableColumn fx:id="orderClientIdColumn" text="CLIENT" prefWidth="150.0" />
+                    <TableColumn fx:id="orderRestaurantColumn" text="RESTAURANT" prefWidth="150.0" />
+                    <TableColumn fx:id="orderPriceColumn" text="TOTAL" prefWidth="110.0" />
+                    <TableColumn fx:id="orderStatusColumn" text="STATUS" prefWidth="130.0" />
+                    <TableColumn fx:id="orderCourierIdColumn" text="COURIER" prefWidth="150.0" />
+                    <TableColumn fx:id="orderCreatedColumn" text="CREATED" prefWidth="135.0" />
+                    <TableColumn fx:id="orderDeliveredColumn" text="DELIVERED" prefWidth="125.0" />
+                    <TableColumn fx:id="actionsColumn" text="ACTIONS" prefWidth="130.0" />
+                </columns>
+            </TableView>
+        </center>
+    </BorderPane>
+</VBox>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="18.0" styleClass="orders-page" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.example.food_delivery.controllers.ClientsController">
+    <HBox alignment="CENTER_LEFT" spacing="18.0">
+        <VBox spacing="4.0">
+            <Label styleClass="page-title" text="Clients" />
+            <Label styleClass="page-subtitle" text="Manage customer profiles and contacts" />
+        </VBox>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button onAction="#onBackToMainMenu" styleClass="ghost-button" text="↩  Back to Main Menu" />
+        <Button onAction="#onClientAdd" styleClass="primary-cta-button" text="+  Add Client" />
+    </HBox>
+
+    <FlowPane hgap="16.0" prefWrapLength="980.0" styleClass="stats-grid" vgap="16.0">
+        <VBox styleClass="metric-card metric-card-total">
+            <Region styleClass="metric-accent-bar" />
+            <Label styleClass="metric-title" text="TOTAL CLIENTS" />
+            <Label fx:id="totalClientsLabel" styleClass="metric-value" text="0" />
+            <Label styleClass="metric-caption" text="Registered profiles" />
+        </VBox>
+        <VBox styleClass="metric-card metric-card-done">
+            <Region styleClass="metric-accent-bar" />
+            <Label styleClass="metric-title" text="WITH EMAIL" />
+            <Label fx:id="clientsWithEmailLabel" styleClass="metric-value" text="0" />
+            <Label styleClass="metric-caption" text="Ready for notifications" />
+        </VBox>
+        <VBox styleClass="metric-card metric-card-delivery">
+            <Region styleClass="metric-accent-bar" />
+            <Label styleClass="metric-title" text="WITH ADDRESS" />
+            <Label fx:id="clientsWithAddressLabel" styleClass="metric-value" text="0" />
+            <Label styleClass="metric-caption" text="Delivery-ready contacts" />
+        </VBox>
+    </FlowPane>
+
+    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="table-filter-row">
+        <TextField fx:id="clientSearchField" promptText="🔍   Search by name, phone, email..." styleClass="toolbar-search-field" HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="clientProfileFilterBox" promptText="All Clients" styleClass="toolbar-filter-box" />
+        <TextField fx:id="clientAddressFilterField" promptText="Address contains" styleClass="toolbar-date-box" />
+        <TextField fx:id="clientContactFilterField" promptText="Email or phone" styleClass="toolbar-date-box" />
+        <Button onAction="#onClientRefresh" styleClass="ghost-button" text="Reset" />
+    </HBox>
+
+    <BorderPane styleClass="orders-table-shell" VBox.vgrow="ALWAYS">
+        <center>
+            <TableView fx:id="clientTable" prefHeight="420.0" styleClass="orders-table">
+                <columns>
+                    <TableColumn fx:id="clientIdColumn" prefWidth="70.0" text="№" />
+                    <TableColumn fx:id="clientNameColumn" prefWidth="220.0" text="FULL NAME" />
+                    <TableColumn fx:id="clientPhoneColumn" prefWidth="160.0" text="PHONE" />
+                    <TableColumn fx:id="clientEmailColumn" prefWidth="240.0" text="EMAIL" />
+                    <TableColumn fx:id="clientAddressColumn" prefWidth="280.0" text="ADDRESS" />
+                    <TableColumn fx:id="clientActionsColumn" prefWidth="130.0" text="ACTIONS" />
+                </columns>
+            </TableView>
+        </center>
+    </BorderPane>
+</VBox>

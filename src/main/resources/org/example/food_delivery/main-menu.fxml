@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.food_delivery.controllers.MainMenuController" styleClass="main-menu-root" stylesheets="@app.css">
+
+    <!-- Decorative food-themed background layer (click-through) -->
+    <StackPane styleClass="menu-bg-layer" mouseTransparent="true" pickOnBounds="false">
+        <Region styleClass="menu-bg-blob menu-bg-blob-1" StackPane.alignment="TOP_LEFT" />
+        <Region styleClass="menu-bg-blob menu-bg-blob-2" StackPane.alignment="BOTTOM_RIGHT" />
+        <Region styleClass="menu-bg-blob menu-bg-blob-3" StackPane.alignment="CENTER_RIGHT" />
+        <Label text="🍕" styleClass="menu-bg-emoji menu-bg-emoji-1" StackPane.alignment="TOP_LEFT" />
+        <Label text="🍔" styleClass="menu-bg-emoji menu-bg-emoji-2" StackPane.alignment="TOP_RIGHT" />
+        <Label text="🥗" styleClass="menu-bg-emoji menu-bg-emoji-3" StackPane.alignment="BOTTOM_LEFT" />
+        <Label text="🍜" styleClass="menu-bg-emoji menu-bg-emoji-4" StackPane.alignment="BOTTOM_RIGHT" />
+        <Label text="🛵" styleClass="menu-bg-emoji menu-bg-emoji-5" StackPane.alignment="CENTER_LEFT" />
+        <Label text="🥤" styleClass="menu-bg-emoji menu-bg-emoji-6" StackPane.alignment="CENTER_RIGHT" />
+    </StackPane>
+
+    <!-- Foreground card -->
+    <VBox alignment="CENTER" spacing="36.0" styleClass="menu-shell" maxWidth="640" maxHeight="640">
+
+        <!-- Logo block -->
+        <VBox alignment="CENTER" spacing="14.0" styleClass="menu-logo-block">
+            <StackPane styleClass="menu-logo-circle">
+                <Label text="🍔" styleClass="menu-logo-emoji" />
+            </StackPane>
+            <Label text="FoodFlow" styleClass="menu-logo-title" />
+            <Label text="Delivery Management Console" styleClass="menu-logo-subtitle" />
+        </VBox>
+
+        <!-- Buttons -->
+        <VBox spacing="14.0" alignment="CENTER" styleClass="menu-buttons">
+            <Button text="📊   Dashboard" onAction="#onOpenDashboard" styleClass="menu-button" maxWidth="Infinity" />
+            <Button text="👥   Clients" onAction="#onOpenClients" styleClass="menu-button" maxWidth="Infinity" />
+            <Button text="🛵   Couriers" onAction="#onOpenCouriers" styleClass="menu-button" maxWidth="Infinity" />
+            <Button text="📦   Orders" onAction="#onOpenOrders" styleClass="menu-button" maxWidth="Infinity" />
+            <Region minHeight="6" />
+            <Button text="✕   Exit" onAction="#onExit" styleClass="menu-button menu-button-exit" maxWidth="Infinity" />
+        </VBox>
+
+        <HBox alignment="CENTER" spacing="6" styleClass="menu-footer">
+            <Label text="v1.0  ·  " styleClass="menu-footer-text" />
+        </HBox>
+    </VBox>
+</StackPane>
