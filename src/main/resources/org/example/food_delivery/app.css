@@ -992,6 +992,33 @@
     -fx-border-color: transparent;
 }
 
+/* Floating Exit pill — top-left corner of the main menu */
+.menu-exit-pill {
+    -fx-background-color: linear-gradient(to bottom right, -primary, -accent);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-padding: 11 22;
+    -fx-background-radius: 999;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8;
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.32), 16, 0.22, 0, 6);
+    -fx-border-color: rgba(255, 255, 255, 0.45);
+    -fx-border-width: 1.2;
+    -fx-border-radius: 999;
+}
+
+.menu-exit-pill:hover {
+    -fx-background-color: linear-gradient(to bottom right, -primary-dark, -primary);
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.50), 22, 0.28, 0, 8);
+    -fx-translate-y: -2;
+}
+
+.menu-exit-pill:pressed {
+    -fx-translate-y: 0;
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.36), 12, 0.22, 0, 4);
+}
+
 .menu-footer-text {
     -fx-font-size: 11px;
     -fx-text-fill: -text-soft;

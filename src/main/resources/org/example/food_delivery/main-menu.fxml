@@ -40,12 +40,10 @@
             <Button text="👥   Clients" onAction="#onOpenClients" styleClass="menu-button" maxWidth="Infinity" />
             <Button text="🛵   Couriers" onAction="#onOpenCouriers" styleClass="menu-button" maxWidth="Infinity" />
             <Button text="📦   Orders" onAction="#onOpenOrders" styleClass="menu-button" maxWidth="Infinity" />
-            <Region minHeight="6" />
-            <Button text="✕   Exit" onAction="#onExit" styleClass="menu-button menu-button-exit" maxWidth="Infinity" />
         </VBox>
 
-        <HBox alignment="CENTER" spacing="6" styleClass="menu-footer">
-            <Label text="v1.0  ·  " styleClass="menu-footer-text" />
+        <HBox alignment="CENTER_LEFT" spacing="6" styleClass="menu-footer">
+            <Button text="✕  Exit" onAction="#onExit" styleClass="menu-exit-pill" />
         </HBox>
     </VBox>
 </StackPane>
