@@ -86,8 +86,6 @@ public class OrdersController {
     @FXML
     private Label cancelledLabel;
     @FXML
-    private TextField headerSearchField;
-    @FXML
     private TextField tableSearchField;
     @FXML
     private ComboBox<String> statusFilterBox;
@@ -114,6 +112,9 @@ public class OrdersController {
     }
 
     private void setupOrderTable() {
+        Label emptyHint = new Label("No orders yet — click '+ Add Order' to create one.");
+        emptyHint.getStyleClass().add("page-subtitle");
+        orderTable.setPlaceholder(emptyHint);
         // show sequential row number instead of DB id
         orderIdColumn.setCellFactory(col -> new TableCell<Order, Integer>() {
             @Override
@@ -228,7 +229,6 @@ public class OrdersController {
     private void setupFilters() {
         statusFilterBox.getItems().setAll("All Statuses", "Created", "Accepted", "Preparing", "In Delivery", "Delivered", "Cancelled");
         statusFilterBox.getSelectionModel().selectFirst();
-        headerSearchField.textProperty().addListener((obs, oldValue, newValue) -> applyFilters());
         tableSearchField.textProperty().addListener((obs, oldValue, newValue) -> applyFilters());
         statusFilterBox.valueProperty().addListener((obs, oldValue, newValue) -> applyFilters());
         fromDatePicker.valueProperty().addListener((obs, oldValue, newValue) -> applyFilters());
@@ -242,6 +242,9 @@ public class OrdersController {
                 Order saved = context.getOrderService().create(order);
                 syncCourierStatusFor(saved, null);
                 refreshOrders();
+                if (context.getCouriers() != null) {
+                    context.getCouriers().setAll(context.getCourierService().findAll());
+                }
             } catch (Exception ex) {
                 showError(ex.getMessage());
             }
@@ -250,7 +253,6 @@ public class OrdersController {
 
     @FXML
     private void onOrderRefresh() {
-        headerSearchField.clear();
         tableSearchField.clear();
         statusFilterBox.getSelectionModel().selectFirst();
         fromDatePicker.setValue(null);
@@ -272,11 +274,11 @@ public class OrdersController {
 
         boolean editing = existingOrder != null;
         ButtonType submitButtonType = new ButtonType(editing ? "Save Changes" : "Add Order", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, cancelButtonType);
 
         ComboBox<Client> clientBox = createClientComboBox();
         ComboBox<Courier> courierBox = createCourierComboBox(existingOrder == null ? null : existingOrder.getCourierId());
-        TextField numberField = new TextField();
         TextField restaurantField = new TextField();
         TextField foodField = new TextField();
         TextField addressField = new TextField();
@@ -298,7 +300,6 @@ public class OrdersController {
         if (editing) {
             clientBox.getSelectionModel().select(findClientById(existingOrder.getClientId()));
             courierBox.getSelectionModel().select(findCourierById(existingOrder.getCourierId()));
-            numberField.setText(existingOrder.getOrderNumber());
             restaurantField.setText(existingOrder.getRestaurantName());
             foodField.setText(existingOrder.getFoodDescription());
             addressField.setText(existingOrder.getDeliveryAddress());
@@ -318,8 +319,6 @@ public class OrdersController {
         form.add(clientError, 1, row++);
         form.add(new Label("Courier"), 0, row);
         form.add(courierBox, 1, row++);
-        form.add(new Label("Order Number"), 0, row);
-        form.add(numberField, 1, row++);
         form.add(new Label("Restaurant"), 0, row);
         form.add(restaurantField, 1, row++);
         form.add(restaurantError, 1, row++);
@@ -380,11 +379,12 @@ public class OrdersController {
             if (buttonType != submitButtonType) {
                 return null;
             }
+            String orderNum = editing ? existingOrder.getOrderNumber() : null;
             Order built = buildOrder(
                     editing ? existingOrder.getId() : null,
                     clientBox.getValue(),
                     courierBox.getValue(),
-                    numberField.getText(),
+                    orderNum,
                     restaurantField.getText(),
                     foodField.getText(),
                     addressField.getText(),
@@ -505,8 +505,8 @@ public class OrdersController {
 
     /**
      * Keeps couriers in step with the order they're assigned to:
-     *   ACCEPTED / PREPARING / IN_DELIVERY → courier becomes BUSY
-     *   DELIVERED / CANCELLED              → courier becomes AVAILABLE
+     *   any active status (CREATED / ACCEPTED / PREPARING / IN_DELIVERY) → courier becomes BUSY
+     *   DELIVERED / CANCELLED                                            → courier becomes AVAILABLE
      * If the courier on a previous version of the order was different and is now
      * unassigned, that ex-courier is freed back to AVAILABLE.
      */
@@ -523,17 +523,14 @@ public class OrdersController {
             return;
         }
         switch (order.getStatus()) {
-            case ACCEPTED:
-            case PREPARING:
-            case IN_DELIVERY:
-                tryUpdateCourierStatus(order.getCourierId(), CourierStatus.BUSY);
-                break;
             case DELIVERED:
             case CANCELLED:
                 tryUpdateCourierStatus(order.getCourierId(), CourierStatus.AVAILABLE);
                 break;
             default:
-                // CREATED — leave courier status alone
+                // CREATED / ACCEPTED / PREPARING / IN_DELIVERY — courier is on the job
+                tryUpdateCourierStatus(order.getCourierId(), CourierStatus.BUSY);
+                break;
         }
     }
 
@@ -573,8 +570,7 @@ public class OrdersController {
     }
 
     private boolean matchesSearch(Order order) {
-        String query = ((headerSearchField.getText() == null ? "" : headerSearchField.getText()) + " "
-                + (tableSearchField.getText() == null ? "" : tableSearchField.getText())).trim().toLowerCase();
+        String query = (tableSearchField.getText() == null ? "" : tableSearchField.getText()).trim().toLowerCase();
         if (query.isEmpty()) {
             return true;
         }
@@ -671,6 +667,7 @@ public class OrdersController {
             }
         }
         comboBox.setItems(items);
+        comboBox.setPromptText(items.isEmpty() ? "No available couriers" : "Select courier (optional)");
         comboBox.setConverter(new StringConverter<Courier>() {
             @Override
             public String toString(Courier courier) {
@@ -781,27 +778,10 @@ public class OrdersController {
     }
 
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Operation failed");
-        alert.setContentText(message == null ? "Unexpected error" : message);
-        styleAlert(alert);
-        alert.showAndWait();
+        AlertFactory.showError("Operation failed", message == null ? "Unexpected error" : message);
     }
 
     private boolean confirmDelete(String entityName, Integer id) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirm delete");
-        alert.setHeaderText("Delete " + entityName + "?");
-        alert.setContentText("This action cannot be undone.");
-        styleAlert(alert);
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.OK;
-    }
-
-    private void styleAlert(Alert alert) {
-        DialogPane pane = alert.getDialogPane();
-        pane.getStyleClass().add("app-dialog");
-        ThemeManager.applyTo(pane);
+        return AlertFactory.confirmDelete(entityName);
     }
 }

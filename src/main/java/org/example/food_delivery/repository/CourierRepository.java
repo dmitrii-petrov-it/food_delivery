@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,13 +18,18 @@ public class CourierRepository implements CrudRepository<Courier, Integer> {
 
     @Override
     public Courier create(Courier courier) {
-        String sql = "INSERT INTO couriers (full_name, phone, vehicle_type, status) VALUES (?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO couriers (full_name, phone, vehicle_type, status, photo) VALUES (?, ?, ?, ?, ?) RETURNING id";
         Connection connection = DBConnection.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, courier.getFullName());
             statement.setString(2, courier.getPhone());
             statement.setString(3, courier.getVehicleType().getDbValue());
             statement.setString(4, courier.getStatus().getDbValue());
+            if (courier.getPhoto() == null) {
+                statement.setNull(5, Types.BINARY);
+            } else {
+                statement.setBytes(5, courier.getPhoto());
+            }
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     courier.setId(resultSet.getInt("id"));
@@ -38,14 +44,19 @@ public class CourierRepository implements CrudRepository<Courier, Integer> {
 
     @Override
     public boolean update(Courier courier) {
-        String sql = "UPDATE couriers SET full_name = ?, phone = ?, vehicle_type = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE couriers SET full_name = ?, phone = ?, vehicle_type = ?, status = ?, photo = ? WHERE id = ?";
         Connection connection = DBConnection.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, courier.getFullName());
             statement.setString(2, courier.getPhone());
             statement.setString(3, courier.getVehicleType().getDbValue());
             statement.setString(4, courier.getStatus().getDbValue());
-            statement.setInt(5, courier.getId());
+            if (courier.getPhoto() == null) {
+                statement.setNull(5, Types.BINARY);
+            } else {
+                statement.setBytes(5, courier.getPhoto());
+            }
+            statement.setInt(6, courier.getId());
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RepositoryException("Failed to update courier", e);
@@ -66,7 +77,7 @@ public class CourierRepository implements CrudRepository<Courier, Integer> {
 
     @Override
     public Optional<Courier> findById(Integer id) {
-        String sql = "SELECT id, full_name, phone, vehicle_type, status FROM couriers WHERE id = ?";
+        String sql = "SELECT id, full_name, phone, vehicle_type, status, photo FROM couriers WHERE id = ?";
         Connection connection = DBConnection.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
@@ -83,7 +94,7 @@ public class CourierRepository implements CrudRepository<Courier, Integer> {
 
     @Override
     public List<Courier> findAll() {
-        String sql = "SELECT id, full_name, phone, vehicle_type, status FROM couriers ORDER BY id";
+        String sql = "SELECT id, full_name, phone, vehicle_type, status, photo FROM couriers ORDER BY id";
         Connection connection = DBConnection.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {

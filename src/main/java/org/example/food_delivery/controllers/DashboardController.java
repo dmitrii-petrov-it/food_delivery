@@ -263,24 +263,10 @@ public class DashboardController {
     }
 
     private void showInfo(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
-        alert.setTitle("Export");
-        alert.setHeaderText("Report");
-        styleAlert(alert);
-        alert.showAndWait();
+        AlertFactory.showSuccess("Report", message);
     }
 
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
-        alert.setTitle("Export");
-        alert.setHeaderText("Report");
-        styleAlert(alert);
-        alert.showAndWait();
-    }
-
-    private void styleAlert(Alert alert) {
-        DialogPane pane = alert.getDialogPane();
-        pane.getStyleClass().add("app-dialog");
-        ThemeManager.applyTo(pane);
+        AlertFactory.showError("Report", message);
     }
 }

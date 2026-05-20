@@ -54,10 +54,11 @@
 
     <BorderPane styleClass="orders-table-shell" VBox.vgrow="ALWAYS">
         <center>
-            <TableView fx:id="courierTable" prefHeight="420.0" styleClass="orders-table">
+            <TableView fx:id="courierTable" prefHeight="420.0" styleClass="orders-table courier-table">
                 <columns>
                     <TableColumn fx:id="courierIdColumn" text="№" prefWidth="70.0" />
-                    <TableColumn fx:id="courierNameColumn" text="FULL NAME" prefWidth="240.0" />
+                    <TableColumn fx:id="courierPhotoColumn" text="PHOTO" prefWidth="90.0" />
+                    <TableColumn fx:id="courierNameColumn" text="FULL NAME" prefWidth="220.0" />
                     <TableColumn fx:id="courierPhoneColumn" text="PHONE" prefWidth="160.0" />
                     <TableColumn fx:id="courierVehicleColumn" text="VEHICLE" prefWidth="150.0" />
                     <TableColumn fx:id="courierStatusColumn" text="STATUS" prefWidth="150.0" />

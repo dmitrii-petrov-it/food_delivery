@@ -20,7 +20,6 @@
             <Label text="Manage all delivery orders" styleClass="page-subtitle" />
         </VBox>
         <Region HBox.hgrow="ALWAYS" />
-        <TextField fx:id="headerSearchField" promptText="🔍   Search orders..." styleClass="header-search-field" />
         <Button text="↩  Back to Main Menu" onAction="#onBackToMainMenu" styleClass="ghost-button" />
         <Button text="+  Add Order" onAction="#onOrderAdd" styleClass="primary-cta-button" />
     </HBox>

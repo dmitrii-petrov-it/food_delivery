@@ -19,20 +19,31 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.example.food_delivery.FoodDelivery;
 import org.example.food_delivery.model.user.Courier;
 import org.example.food_delivery.model.user.CourierStatus;
 import org.example.food_delivery.model.user.CourierVehicleType;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public class CouriersController {
+    private static final int MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
     private AppContext context;
     private FilteredList<Courier> filteredCouriers;
 
@@ -40,6 +51,8 @@ public class CouriersController {
     private TableView<Courier> courierTable;
     @FXML
     private TableColumn<Courier, Integer> courierIdColumn;
+    @FXML
+    private TableColumn<Courier, Void> courierPhotoColumn;
     @FXML
     private TableColumn<Courier, String> courierNameColumn;
     @FXML
@@ -77,6 +90,9 @@ public class CouriersController {
     }
 
     private void setupCourierTable() {
+        Label emptyHint = new Label("No couriers yet — click '+ Add Courier' to create one.");
+        emptyHint.getStyleClass().add("page-subtitle");
+        courierTable.setPlaceholder(emptyHint);
         // show sequential index instead of DB id
         courierIdColumn.setCellFactory(col -> new TableCell<Courier, Integer>() {
             @Override
@@ -90,6 +106,7 @@ public class CouriersController {
             }
         });
         courierNameColumn.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        setupPhotoColumn();
         courierPhoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
         courierVehicleColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatVehicle(cell.getValue().getVehicleType())));
         courierStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -171,6 +188,38 @@ public class CouriersController {
                 || contains(courier.getPhone(), query);
     }
 
+    private void setupPhotoColumn() {
+        courierPhotoColumn.setCellFactory(column -> new TableCell<Courier, Void>() {
+            private final ImageView photo = new ImageView();
+            private final HBox box = new HBox(photo);
+
+            {
+                double size = CourierPhotos.sizePx();
+                photo.setFitWidth(size);
+                photo.setFitHeight(size);
+                photo.setPreserveRatio(true);
+                photo.setSmooth(true);
+                photo.setClip(new Circle(size / 2.0, size / 2.0, size / 2.0));
+                box.setAlignment(Pos.CENTER);
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                int idx = getIndex();
+                if (empty || idx < 0 || getTableView() == null || idx >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
+                Courier courier = getTableView().getItems().get(idx);
+                photo.setImage(CourierPhotos.imageFor(courier));
+                setGraphic(box);
+                setText(null);
+            }
+        });
+    }
+
     private void setupActionsColumn() {
         courierActionsColumn.setCellFactory(column -> new TableCell<Courier, Void>() {
             private final Button editButton = createIconButton("\u270E", "table-edit-icon-button");
@@ -208,7 +257,10 @@ public class CouriersController {
     private void onCourierAdd() {
         showCourierDialog("Add Courier", "Create a new courier", null).ifPresent(courier -> {
             try {
-                context.getCourierService().create(courier);
+                Courier created = context.getCourierService().create(courier);
+                if (created != null) {
+                    CourierPhotos.invalidate(created.getId());
+                }
                 refreshCouriers();
             } catch (Exception ex) {
                 showError(ex.getMessage());
@@ -238,12 +290,21 @@ public class CouriersController {
         styleDialog(dialog.getDialogPane());
 
         boolean editing = existingCourier != null;
+        Integer editingId = editing ? existingCourier.getId() : null;
         ButtonType submitButtonType = new ButtonType(editing ? "Save Changes" : "Add Courier", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, cancelButtonType);
 
         TextField nameField = new TextField();
         TextField phoneField = new TextField();
+        nameField.setTextFormatter(createNameFormatter());
         phoneField.setTextFormatter(createPhoneFormatter());
+        nameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty() && Character.isLowerCase(newVal.charAt(0))) {
+                String fixed = Character.toUpperCase(newVal.charAt(0)) + newVal.substring(1);
+                if (!fixed.equals(newVal)) nameField.setText(fixed);
+            }
+        });
                         Label nameError = createErrorLabel();
                         Label phoneError = createErrorLabel();
                         Label vehicleError = createErrorLabel();
@@ -255,12 +316,66 @@ public class CouriersController {
         vehicleBox.getSelectionModel().select(CourierVehicleType.BIKE);
         statusBox.getSelectionModel().select(CourierStatus.AVAILABLE);
 
+        final byte[][] photoHolder = new byte[1][];
+        double previewSize = CourierPhotos.sizePx() * 1.6;
+        ImageView photoPreview = new ImageView();
+        photoPreview.setFitWidth(previewSize);
+        photoPreview.setFitHeight(previewSize);
+        photoPreview.setPreserveRatio(true);
+        photoPreview.setSmooth(true);
+        photoPreview.setClip(new Circle(previewSize / 2.0, previewSize / 2.0, previewSize / 2.0));
+        Button choosePhotoButton = new Button("Choose Photo…");
+        choosePhotoButton.getStyleClass().add("ghost-button");
+        Button clearPhotoButton = new Button("Remove");
+        clearPhotoButton.getStyleClass().add("ghost-button");
+        Label photoError = createErrorLabel();
+        HBox photoBox = new HBox(12.0, photoPreview, choosePhotoButton, clearPhotoButton);
+        photoBox.setAlignment(Pos.CENTER_LEFT);
+
         if (editing) {
             nameField.setText(existingCourier.getFullName());
             phoneField.setText(existingCourier.getPhone());
             vehicleBox.getSelectionModel().select(existingCourier.getVehicleType());
             statusBox.getSelectionModel().select(existingCourier.getStatus());
+            photoHolder[0] = existingCourier.getPhoto();
         }
+        Runnable refreshPreview = () -> {
+            byte[] bytes = photoHolder[0];
+            if (bytes != null && bytes.length > 0) {
+                photoPreview.setImage(new Image(new ByteArrayInputStream(bytes), previewSize * 2.0, previewSize * 2.0, true, true));
+            } else {
+                photoPreview.setImage(null);
+            }
+            clearPhotoButton.setDisable(bytes == null || bytes.length == 0);
+        };
+        refreshPreview.run();
+
+        choosePhotoButton.setOnAction(event -> {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle("Select Courier Photo");
+            chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.jpg", "*.jpeg", "*.png"));
+            Window owner = dialog.getDialogPane().getScene() == null ? null : dialog.getDialogPane().getScene().getWindow();
+            File file = chooser.showOpenDialog(owner);
+            if (file == null) {
+                return;
+            }
+            try {
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                if (bytes.length > MAX_PHOTO_BYTES) {
+                    applyFieldError(choosePhotoButton, photoError, false, "Photo is too large (max 5 MB).");
+                    return;
+                }
+                photoHolder[0] = bytes;
+                applyFieldError(choosePhotoButton, photoError, true, "");
+                refreshPreview.run();
+            } catch (IOException ex) {
+                applyFieldError(choosePhotoButton, photoError, false, "Could not read photo: " + ex.getMessage());
+            }
+        });
+        clearPhotoButton.setOnAction(event -> {
+            photoHolder[0] = null;
+            refreshPreview.run();
+        });
 
         GridPane form = new GridPane();
         form.getStyleClass().add("modal-form");
@@ -279,14 +394,26 @@ public class CouriersController {
         form.add(new Label("Status"), 0, row);
         form.add(statusBox, 1, row++);
         form.add(statusError, 1, row++);
+        form.add(new Label("Photo"), 0, row);
+        form.add(photoBox, 1, row++);
+        form.add(photoError, 1, row++);
         dialog.getDialogPane().setContent(form);
 
         // inline validation
         Button submitButton = (Button) dialog.getDialogPane().lookupButton(submitButtonType);
         Runnable validate = () -> {
             boolean valid = true;
-            valid &= applyFieldError(nameField, nameError, isNonEmpty(nameField.getText()), "Full name is required.");
-            valid &= applyFieldError(phoneField, phoneError, isValidPhone(phoneField.getText()), "Phone must be 12 characters total: optional '+' at start and 11 digits.");
+            valid &= applyFieldError(nameField, nameError, isValidName(nameField.getText()),
+                    nameField.getText() == null || nameField.getText().trim().isEmpty()
+                            ? "Full name is required." : "Name must start with a capital letter and contain no digits.");
+            String phoneText = phoneField.getText();
+            boolean phoneFormatOk = isValidPhone(phoneText);
+            boolean phoneDuplicate = phoneFormatOk && context.getCouriers().stream()
+                    .anyMatch(c -> phoneText.equals(c.getPhone()) && !java.util.Objects.equals(c.getId(), editingId));
+            String phoneErrMsg = !phoneFormatOk
+                    ? "Phone must be 12 characters total: optional '+' at start and 11 digits."
+                    : phoneDuplicate ? "This phone number is already registered." : "";
+            valid &= applyFieldError(phoneField, phoneError, phoneFormatOk && !phoneDuplicate, phoneErrMsg);
             valid &= applyFieldError(vehicleBox, vehicleError, vehicleBox.getValue() != null, "Vehicle is required.");
             valid &= applyFieldError(statusBox, statusError, statusBox.getValue() != null, "Status is required.");
             submitButton.setDisable(!valid);
@@ -308,11 +435,13 @@ public class CouriersController {
             if (buttonType != submitButtonType) {
                 return null;
             }
-            return new Courier(editing ? existingCourier.getId() : null,
+            Courier result = new Courier(editing ? existingCourier.getId() : null,
                     nameField.getText(),
                     phoneField.getText(),
                     vehicleBox.getValue(),
                     statusBox.getValue());
+            result.setPhoto(photoHolder[0]);
+            return result;
         });
         return dialog.showAndWait();
     }
@@ -321,8 +450,24 @@ public class CouriersController {
         return s != null && !s.trim().isEmpty();
     }
 
+    private boolean isValidName(String name) {
+        if (name == null || name.trim().isEmpty()) return false;
+        String trimmed = name.trim();
+        return !trimmed.matches(".*\\d.*") && Character.isUpperCase(trimmed.charAt(0));
+    }
+
     private boolean isValidPhone(String phone) {
         return phone != null && phone.matches("\\+?\\d{11}");
+    }
+
+    private TextFormatter<String> createNameFormatter() {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            if (change.getControlNewText().matches(".*\\d.*")) {
+                return null;
+            }
+            return change;
+        };
+        return new TextFormatter<>(filter);
     }
 
     private boolean applyFieldError(Control field, Label errorLabel, boolean valid, String message) {
@@ -370,6 +515,7 @@ public class CouriersController {
         try {
             updatedCourier.setId(courierId);
             context.getCourierService().update(updatedCourier);
+            CourierPhotos.invalidate(courierId);
             refreshCouriers();
         } catch (Exception ex) {
             showError(ex.getMessage());
@@ -394,6 +540,17 @@ public class CouriersController {
     private void deleteCourier(Courier courier) {
         if (courier == null) {
             throw new IllegalArgumentException("Courier is not selected");
+        }
+        long activeOrders = context.getOrders().stream()
+                .filter(o -> courier.getId().equals(o.getCourierId()))
+                .filter(o -> o.getStatus() != org.example.food_delivery.model.order.OrderStatus.DELIVERED
+                        && o.getStatus() != org.example.food_delivery.model.order.OrderStatus.CANCELLED)
+                .count();
+        if (activeOrders > 0) {
+            AlertFactory.showError("Cannot delete courier",
+                    "This courier has " + activeOrders + " active order(s). "
+                            + "Finish or reassign them before deleting.");
+            return;
         }
         if (!confirmDelete("courier", courier.getId())) {
             return;
@@ -448,29 +605,10 @@ public class CouriersController {
     }
 
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Operation failed");
-        alert.setContentText(message == null ? "Unexpected error" : message);
-        styleAlert(alert);
-        alert.showAndWait();
+        AlertFactory.showError("Operation failed", message == null ? "Unexpected error" : message);
     }
 
     private boolean confirmDelete(String entityName, Integer id) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirm delete");
-        alert.setHeaderText("Delete " + entityName + "?");
-        alert.setContentText("This action cannot be undone.");
-        styleAlert(alert);
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.OK;
+        return AlertFactory.confirmDelete(entityName);
     }
-
-    private void styleAlert(Alert alert) {
-        DialogPane pane = alert.getDialogPane();
-        pane.getStyleClass().add("app-dialog");
-        ThemeManager.applyTo(pane);
-    }
-
-    // duplicate alert helpers removed
 }

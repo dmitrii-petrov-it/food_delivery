@@ -36,7 +36,7 @@
 
         <!-- Buttons -->
         <VBox spacing="14.0" alignment="CENTER" styleClass="menu-buttons">
-            <Button text="📊   Dashboard" onAction="#onOpenDashboard" styleClass="menu-button" maxWidth="Infinity" />
+            <Button text="📊   Statistics" onAction="#onOpenDashboard" styleClass="menu-button" maxWidth="Infinity" />
             <Button text="👥   Clients" onAction="#onOpenClients" styleClass="menu-button" maxWidth="Infinity" />
             <Button text="🛵   Couriers" onAction="#onOpenCouriers" styleClass="menu-button" maxWidth="Infinity" />
             <Button text="📦   Orders" onAction="#onOpenOrders" styleClass="menu-button" maxWidth="Infinity" />

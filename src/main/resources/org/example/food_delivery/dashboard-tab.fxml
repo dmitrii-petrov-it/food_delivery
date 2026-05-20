@@ -25,7 +25,7 @@
             <!-- Header -->
             <HBox alignment="CENTER_LEFT" spacing="18.0">
                 <VBox spacing="4.0">
-                    <Label text="Dashboard" styleClass="page-title" />
+                    <Label text="Statistics" styleClass="page-title" />
                     <Label text="Operations overview, delivery analytics and revenue" styleClass="page-subtitle" />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />

@@ -75,6 +75,9 @@ public class ClientsController {
     }
 
     private void setupClientTable() {
+        Label emptyHint = new Label("No clients yet — click '+ Add Client' to create one.");
+        emptyHint.getStyleClass().add("page-subtitle");
+        clientTable.setPlaceholder(emptyHint);
         // show sequential index instead of DB id
         clientIdColumn.setCellFactory(col -> new TableCell<Client, Integer>() {
             @Override
@@ -214,14 +217,23 @@ public class ClientsController {
         styleDialog(dialog.getDialogPane());
 
         boolean editing = existingClient != null;
+        Integer editingId = editing ? existingClient.getId() : null;
         ButtonType submitButtonType = new ButtonType(editing ? "Save Changes" : "Add Client", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, cancelButtonType);
 
         TextField nameField = new TextField();
         TextField phoneField = new TextField();
         TextField emailField = new TextField();
         TextField addressField = new TextField();
+        nameField.setTextFormatter(createNameFormatter());
         phoneField.setTextFormatter(createPhoneFormatter());
+        nameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty() && Character.isLowerCase(newVal.charAt(0))) {
+                String fixed = Character.toUpperCase(newVal.charAt(0)) + newVal.substring(1);
+                if (!fixed.equals(newVal)) nameField.setText(fixed);
+            }
+        });
 
         Label nameError = createErrorLabel();
         Label phoneError = createErrorLabel();
@@ -258,8 +270,17 @@ public class ClientsController {
         Button submitButton = (Button) dialog.getDialogPane().lookupButton(submitButtonType);
         Runnable validate = () -> {
             boolean valid = true;
-            valid &= applyFieldError(nameField, nameError, isNonEmpty(nameField.getText()), "Full name is required.");
-            valid &= applyFieldError(phoneField, phoneError, isValidPhone(phoneField.getText()), "Phone must be 12 characters total: optional '+' at start and 11 digits.");
+            valid &= applyFieldError(nameField, nameError, isValidName(nameField.getText()),
+                    nameField.getText() == null || nameField.getText().trim().isEmpty()
+                            ? "Full name is required." : "Name must start with a capital letter and contain no digits.");
+            String phoneText = phoneField.getText();
+            boolean phoneFormatOk = isValidPhone(phoneText);
+            boolean phoneDuplicate = phoneFormatOk && context.getClients().stream()
+                    .anyMatch(c -> phoneText.equals(c.getPhone()) && !java.util.Objects.equals(c.getId(), editingId));
+            String phoneErrMsg = !phoneFormatOk
+                    ? "Phone must be 12 characters total: optional '+' at start and 11 digits."
+                    : phoneDuplicate ? "This phone number is already registered." : "";
+            valid &= applyFieldError(phoneField, phoneError, phoneFormatOk && !phoneDuplicate, phoneErrMsg);
             boolean emailOk = emailField.getText() == null || emailField.getText().trim().isEmpty() || isValidEmail(emailField.getText());
             valid &= applyFieldError(emailField, emailError, emailOk, "Email format is invalid.");
             valid &= applyFieldError(addressField, addressError, isNonEmpty(addressField.getText()), "Address is required.");
@@ -295,8 +316,24 @@ public class ClientsController {
         return s != null && !s.trim().isEmpty();
     }
 
+    private boolean isValidName(String name) {
+        if (name == null || name.trim().isEmpty()) return false;
+        String trimmed = name.trim();
+        return !trimmed.matches(".*\\d.*") && Character.isUpperCase(trimmed.charAt(0));
+    }
+
     private boolean isValidPhone(String phone) {
         return phone != null && phone.matches("\\+?\\d{11}");
+    }
+
+    private TextFormatter<String> createNameFormatter() {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            if (change.getControlNewText().matches(".*\\d.*")) {
+                return null;
+            }
+            return change;
+        };
+        return new TextFormatter<>(filter);
     }
 
     private boolean isValidEmail(String email) {
@@ -372,6 +409,15 @@ public class ClientsController {
         if (client == null) {
             throw new IllegalArgumentException("Client is not selected");
         }
+        long ordersCount = context.getOrders().stream()
+                .filter(o -> client.getId().equals(o.getClientId()))
+                .count();
+        if (ordersCount > 0) {
+            AlertFactory.showError("Cannot delete client",
+                    "This client has " + ordersCount + " order(s) in the system. "
+                            + "Delete or reassign those orders first.");
+            return;
+        }
         if (!confirmDelete("client", client.getId())) {
             return;
         }
@@ -402,27 +448,10 @@ public class ClientsController {
     }
 
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Operation failed");
-        alert.setContentText(message == null ? "Unexpected error" : message);
-        styleAlert(alert);
-        alert.showAndWait();
+        AlertFactory.showError("Operation failed", message == null ? "Unexpected error" : message);
     }
 
     private boolean confirmDelete(String entityName, Integer id) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirm delete");
-        alert.setHeaderText("Delete " + entityName + "?");
-        alert.setContentText("This action cannot be undone.");
-        styleAlert(alert);
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.OK;
-    }
-
-    private void styleAlert(Alert alert) {
-        DialogPane pane = alert.getDialogPane();
-        pane.getStyleClass().add("app-dialog");
-        ThemeManager.applyTo(pane);
+        return AlertFactory.confirmDelete(entityName);
     }
 }

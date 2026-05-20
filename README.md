@@ -60,6 +60,6 @@ mvn -q -Dexec.mainClass=org.example.food_delivery.AppRunner exec:java
 If you want to run the JavaFX UI entry point:
 
 ```
-mvn -q -DskipTests javafx:run
+mvn -q -DskipTests javafx:run   
 ```
 

@@ -143,4 +143,19 @@ public class OrderRepository implements CrudRepository<Order, Integer> {
             throw new RepositoryException("Failed to load orders", e);
         }
     }
+
+    public int nextOrderNumberSequence() {
+        String sql = "SELECT COALESCE(MAX(CAST(SUBSTRING(order_number FROM 4) AS INTEGER)), 0) AS max_seq "
+                + "FROM orders WHERE order_number ~ '^FD-[0-9]+$'";
+        Connection connection = DBConnection.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            if (resultSet.next()) {
+                return resultSet.getInt("max_seq") + 1;
+            }
+            return 1;
+        } catch (SQLException e) {
+            throw new RepositoryException("Failed to compute next order number", e);
+        }
+    }
 }

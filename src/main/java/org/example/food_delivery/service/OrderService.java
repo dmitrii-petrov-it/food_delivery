@@ -2,7 +2,7 @@ package org.example.food_delivery.service;
 
 import org.example.food_delivery.model.order.Order;
 import org.example.food_delivery.model.order.OrderStatus;
-import org.example.food_delivery.repository.CrudRepository;
+import org.example.food_delivery.repository.OrderRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -10,9 +10,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class OrderService {
-    private final CrudRepository<Order, Integer> repository;
+    private final OrderRepository repository;
 
-    public OrderService(CrudRepository<Order, Integer> repository) {
+    public OrderService(OrderRepository repository) {
         this.repository = repository;
     }
 
@@ -61,9 +61,7 @@ public class OrderService {
     }
 
     private String generateOrderNumber() {
-        // Time-based, monotonic-ish, collision-safe to the millisecond
-        long now = System.currentTimeMillis();
-        return "FD-" + Long.toString(now, 36).toUpperCase();
+        return String.format("FD-%04d", repository.nextOrderNumberSequence());
     }
 
     private void requireText(String value, String message) {
