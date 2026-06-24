@@ -21,8 +21,9 @@ public final class ThemeManager {
 
     public static void applyTo(Parent root) {
         if (root == null) return;
-        if (!root.getStylesheets().contains(cssUrl())) {
-            root.getStylesheets().add(cssUrl());
+        String css = cssUrl();
+        if (!css.isEmpty() && !root.getStylesheets().contains(css)) {
+            root.getStylesheets().add(css);
         }
         if (dark) {
             if (!root.getStyleClass().contains(DARK_CLASS)) {
@@ -35,8 +36,9 @@ public final class ThemeManager {
 
     public static void applyTo(DialogPane pane) {
         if (pane == null) return;
-        if (!pane.getStylesheets().contains(cssUrl())) {
-            pane.getStylesheets().add(cssUrl());
+        String css = cssUrl();
+        if (!css.isEmpty() && !pane.getStylesheets().contains(css)) {
+            pane.getStylesheets().add(css);
         }
         if (dark) {
             if (!pane.getStyleClass().contains(DARK_CLASS)) {
@@ -48,6 +50,11 @@ public final class ThemeManager {
     }
 
     private static String cssUrl() {
-        return ThemeManager.class.getResource(CSS_PATH).toExternalForm();
+        java.net.URL url = ThemeManager.class.getResource(CSS_PATH);
+        if (url == null) {
+            System.err.println("ThemeManager: stylesheet missing at " + CSS_PATH);
+            return "";
+        }
+        return url.toExternalForm();
     }
 }

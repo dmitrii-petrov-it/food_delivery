@@ -9,12 +9,14 @@ import java.sql.SQLException;
 
 public class CourierRowMapper {
     public Courier mapRow(ResultSet resultSet) throws SQLException {
-        return new Courier(
+        Courier courier = new Courier(
                 resultSet.getInt("id"),
                 resultSet.getString("full_name"),
                 resultSet.getString("phone"),
                 CourierVehicleType.fromDbValue(resultSet.getString("vehicle_type")),
                 CourierStatus.fromDbValue(resultSet.getString("status"))
         );
+        courier.setPhoto(resultSet.getBytes("photo"));
+        return courier;
     }
 }

@@ -88,6 +88,7 @@
 }
 
 .nav-button-active:hover {
+    -fx-background-color: linear-gradient(to right, -primary, -accent);
     -fx-text-fill: white;
 }
 
@@ -406,6 +407,14 @@
     -fx-alignment: CENTER_LEFT;
 }
 
+.courier-table .table-row-cell {
+    -fx-cell-size: 64;
+}
+
+.courier-table .table-cell {
+    -fx-padding: 10 14;
+}
+
 .orders-table:focused,
 .data-table:focused {
     -fx-background-color: transparent;
@@ -589,6 +598,144 @@
     -fx-background-color: -bg-soft;
     -fx-text-fill: -primary;
     -fx-border-color: -accent-soft;
+}
+
+/* ==========================================================================
+   Styled Alerts (AlertFactory) — type-tinted gradient header, big icon,
+   rounded card, soft shadow, type-coloured primary button.
+   ========================================================================== */
+
+.app-alert {
+    -fx-background-color: -surface;
+    -fx-background-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(44, 30, 15, 0.22), 32, 0.22, 0, 12);
+}
+
+.app-alert > .button-bar > .container,
+.app-alert > .content.label,
+.app-alert > .header-panel {
+    -fx-background-color: transparent;
+}
+
+.app-alert .header-panel {
+    -fx-padding: 22 28 22 24;
+    -fx-background-radius: 18 18 0 0;
+}
+
+.app-alert .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-weight: 800;
+    -fx-font-size: 18px;
+}
+
+.app-alert .header-panel > .graphic-container {
+    -fx-padding: 0 12 0 0;
+}
+
+.app-alert-icon {
+    -fx-text-fill: white;
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-padding: 0 8 0 4;
+    -fx-min-width: 44;
+    -fx-min-height: 44;
+    -fx-alignment: CENTER;
+    -fx-background-color: rgba(255, 255, 255, 0.22);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 255, 255, 0.35);
+    -fx-border-radius: 999;
+    -fx-border-width: 1.2;
+}
+
+.app-alert .content.label,
+.app-alert .content {
+    -fx-text-fill: -text;
+    -fx-font-size: 14px;
+    -fx-padding: 22 28 16 28;
+    -fx-line-spacing: 2px;
+    -fx-wrap-text: true;
+}
+
+.app-alert .button-bar {
+    -fx-padding: 6 22 20 22;
+}
+
+.app-alert .button-bar .button {
+    -fx-background-radius: 12;
+    -fx-font-weight: 700;
+    -fx-padding: 11 22;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-min-width: 96;
+}
+
+/* default OK button (type-coloured) */
+.app-alert .button-bar .button:default {
+    -fx-text-fill: white;
+}
+
+.app-alert .button-bar .button:default:hover {
+    -fx-translate-y: -1;
+}
+
+/* cancel button (neutral) */
+.app-alert .button-bar .button:cancel-button {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 12;
+    -fx-text-fill: -text;
+}
+
+.app-alert .button-bar .button:cancel-button:hover {
+    -fx-background-color: -bg-soft;
+    -fx-text-fill: -primary;
+    -fx-border-color: -accent-soft;
+}
+
+/* --- per-type accents -------------------------------------------------- */
+
+/* ERROR — red gradient */
+.app-alert-error .header-panel {
+    -fx-background-color: linear-gradient(to right, #C62828, #E53935 50%, #FF5252);
+}
+.app-alert-error .button-bar .button:default {
+    -fx-background-color: linear-gradient(to right, #C62828, #E53935);
+}
+.app-alert-error .button-bar .button:default:hover {
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.36), 14, 0.22, 0, 5);
+}
+
+/* INFO — brand red→orange gradient */
+.app-alert-info .header-panel {
+    -fx-background-color: linear-gradient(to right, -primary, -accent);
+}
+.app-alert-info .button-bar .button:default {
+    -fx-background-color: linear-gradient(to right, -primary, -accent);
+}
+.app-alert-info .button-bar .button:default:hover {
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.30), 14, 0.20, 0, 5);
+}
+
+/* SUCCESS — green gradient */
+.app-alert-success .header-panel {
+    -fx-background-color: linear-gradient(to right, #2E7D32, #43A047 50%, #66BB6A);
+}
+.app-alert-success .button-bar .button:default {
+    -fx-background-color: linear-gradient(to right, #2E7D32, #43A047);
+}
+.app-alert-success .button-bar .button:default:hover {
+    -fx-effect: dropshadow(gaussian, rgba(67, 160, 71, 0.36), 14, 0.22, 0, 5);
+}
+
+/* CONFIRM / WARN — amber→orange gradient */
+.app-alert-warn .header-panel {
+    -fx-background-color: linear-gradient(to right, #E65100, #FB8C00 50%, #FFA726);
+}
+.app-alert-warn .button-bar .button:default {
+    -fx-background-color: linear-gradient(to right, #E65100, #FB8C00);
+}
+.app-alert-warn .button-bar .button:default:hover {
+    -fx-effect: dropshadow(gaussian, rgba(251, 140, 0, 0.38), 14, 0.22, 0, 5);
 }
 
 .modal-form {
@@ -992,6 +1139,33 @@
     -fx-border-color: transparent;
 }
 
+/* Floating Exit pill — top-left corner of the main menu */
+.menu-exit-pill {
+    -fx-background-color: linear-gradient(to bottom right, -primary, -accent);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-padding: 11 22;
+    -fx-background-radius: 999;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8;
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.32), 16, 0.22, 0, 6);
+    -fx-border-color: rgba(255, 255, 255, 0.45);
+    -fx-border-width: 1.2;
+    -fx-border-radius: 999;
+}
+
+.menu-exit-pill:hover {
+    -fx-background-color: linear-gradient(to bottom right, -primary-dark, -primary);
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.50), 22, 0.28, 0, 8);
+    -fx-translate-y: -2;
+}
+
+.menu-exit-pill:pressed {
+    -fx-translate-y: 0;
+    -fx-effect: dropshadow(gaussian, rgba(229, 57, 53, 0.36), 12, 0.22, 0, 4);
+}
+
 .menu-footer-text {
     -fx-font-size: 11px;
     -fx-text-fill: -text-soft;
@@ -1169,15 +1343,45 @@
 .dark-theme .table-view .column-header,
 .dark-theme .table-view .filler {
     -fx-background-color: -surface;
+    -fx-background-insets: 0;
+}
+
+.dark-theme .table-view .column-header,
+.dark-theme .table-view .filler {
+    -fx-border-color: transparent;
+}
+
+.dark-theme .table-view .column-header-background {
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.dark-theme .table-view .column-header .separator {
+    -fx-background-color: transparent;
+    visibility: hidden;
+}
+
+.dark-theme .table-view .column-resize-line {
+    -fx-background-color: -accent;
+}
+
+.dark-theme .table-view .table-cell {
+    -fx-border-color: transparent;
 }
 
 .dark-theme .table-row-cell {
     -fx-background-color: -surface;
     -fx-text-background-color: -text;
+    -fx-border-color: transparent transparent -border transparent;
 }
 
 .dark-theme .table-row-cell:odd {
     -fx-background-color: -bg-soft;
+}
+
+.dark-theme .table-row-cell:empty,
+.dark-theme .table-row-cell:empty:odd {
+    -fx-background-color: -surface;
+    -fx-border-color: transparent;
 }
 
 .dark-theme .text-field,
@@ -1188,6 +1392,20 @@
     -fx-text-fill: -text;
     -fx-prompt-text-fill: -text-soft;
     -fx-border-color: -border;
+}
+
+.dark-theme .combo-box .list-cell,
+.dark-theme .combo-box-base .list-cell,
+.dark-theme .date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text;
+    -fx-prompt-text-fill: -text-soft;
+}
+
+.dark-theme .toolbar-filter-box .list-cell,
+.dark-theme .toolbar-date-box .list-cell {
+    -fx-text-fill: -text;
+    -fx-prompt-text-fill: -text-soft;
 }
 
 /* --------------------------------------------------------------------------
@@ -1361,6 +1579,11 @@
     -fx-border-width: 1.5;
     -fx-text-fill: -primary;
     -fx-effect: null;
+}
+
+/* Keep the active item's original text color on hover (don't force white) */
+.dark-theme .nav-button-active:hover {
+    -fx-text-fill: -primary;
 }
 
 /* ---- Cards: keep border, remove fill (still uses surface bg from variables) ---- */

@@ -4,10 +4,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.DialogPane;
 import javafx.stage.Stage;
+import org.example.food_delivery.controllers.AlertFactory;
 
 public class FoodDelivery extends Application {
 
@@ -67,17 +65,7 @@ public class FoodDelivery extends Application {
     private static void showLoadError(String header, Throwable ex) {
         try {
             String message = ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage();
-            Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
-            alert.setTitle("FoodFlow");
-            alert.setHeaderText(header);
-            DialogPane pane = alert.getDialogPane();
-            try {
-                pane.getStylesheets().add(FoodDelivery.class.getResource("app.css").toExternalForm());
-                pane.getStyleClass().add("app-dialog");
-            } catch (Throwable ignored) {
-                // styling is best-effort
-            }
-            alert.showAndWait();
+            AlertFactory.showError(header, message);
         } catch (Throwable ignored) {
             // last-resort: don't escalate UI errors
         }

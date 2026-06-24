@@ -22,7 +22,7 @@
             </VBox>
             <Region VBox.vgrow="ALWAYS" />
             <VBox styleClass="nav-footer">
-                <Button fx:id="dashboardNavButton" text="📊   Dashboard" onAction="#onOpenDashboard" styleClass="nav-button" maxWidth="Infinity" />
+                <Button fx:id="dashboardNavButton" text="📊   Statistics" onAction="#onOpenDashboard" styleClass="nav-button" maxWidth="Infinity" />
             </VBox>
         </VBox>
     </left>
